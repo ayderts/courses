@@ -1,0 +1,44 @@
+version: '3.7'
+
+services:
+  nginx:
+    image: nginx:alpine
+    volumes:
+      - ../:/var/www:delegated
+      - ./nginx/:/etc/nginx/conf.d:delegated
+      - ./nginx/vhosts:/etc/nginx/vhosts:delegated
+      - ./nginx/logs:/var/log/nginx:delegated
+    depends_on:
+      - php-fpm
+  php-fpm:
+    #build:
+      #context: php-fpm
+      #dockerfile: Dockerfile
+    image: rocketfirm911/php-fpm:7.4
+    volumes:
+      - ../:/var/www:delegated
+      - ./php-fpm/php.ini:/usr/local/etc/php/conf.d/40-custom.ini:delegated
+      - ~/.ssh:/home/www-data/.ssh:delegated
+  postgres:
+    image: kartoza/postgis
+    environment:
+      POSTGRES_USER: ${DB_USERNAME}
+      POSTGRES_PASS: ${DB_PASSWORD}
+      POSTGRES_MULTIPLE_EXTENSIONS: postgis
+      POSTGRES_DBNAME: ${DB_DATABASE}
+    ports:
+      - "${DB_PORT}:5432"
+  adminer:
+    image: adminer
+    environment:
+      - ADMINER_DESIGN=hever
+    volumes:
+      - ./adminer/adminer.css:/var/www/html/designs/hever/adminer.css:delegated
+    depends_on:
+      - postgres
+  swagger-editor:
+    image: swaggerapi/swagger-editor:latest
+    environment:
+      - SWAGGER_FILE=/tmp/swagger.yaml
+    volumes:
+      - ./swagger.yaml:/tmp/swagger.yaml

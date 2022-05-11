@@ -1,0 +1,1213 @@
+# ███╗░░░███╗░█████╗░██╗███╗░░██╗░░░░░░░█████╗░░█████╗░███╗░░██╗███████╗
+# ████╗░████║██╔══██╗██║████╗░██║░░░░░░██╔══██╗██╔══██╗████╗░██║██╔════╝
+# ██╔████╔██║███████║██║██╔██╗██║█████╗██║░░╚═╝██║░░██║██╔██╗██║█████╗░░
+# ██║╚██╔╝██║██╔══██║██║██║╚████║╚════╝██║░░██╗██║░░██║██║╚████║██╔══╝░░
+# ██║░╚═╝░██║██║░░██║██║██║░╚███║░░░░░░╚█████╔╝╚█████╔╝██║░╚███║██║░░░░░
+# ╚═╝░░░░░╚═╝╚═╝░░╚═╝╚═╝╚═╝░░╚══╝░░░░░░░╚════╝░░╚════╝░╚═╝░░╚══╝╚═╝░░░░░
+
+openapi: 3.0.0
+info:
+  title: BI-LMS:JSON:API
+  description: Документация API по LMS.
+  version: 1.0.0
+  termsOfService: https://jsonapi.org/format/
+  contact:
+    name: Assylbek
+    url: https://t.me/asbeeq
+  license:
+    name: RocketFirm
+    url: https://rocketfirm.com
+externalDocs:
+  description: OpenAPI-Specification
+  url: https://github.com/OAI/OpenAPI-Specification/blob/master/versions/3.0.0.md
+servers:
+  - url: http://bi-lms-backend.rocketfirm.net/api/v1
+
+# ████████╗░█████╗░░██████╗░░██████╗
+# ╚══██╔══╝██╔══██╗██╔════╝░██╔════╝
+# ░░░██║░░░███████║██║░░██╗░╚█████╗░
+# ░░░██║░░░██╔══██║██║░░╚██╗░╚═══██╗
+# ░░░██║░░░██║░░██║╚██████╔╝██████╔╝
+# ░░░╚═╝░░░╚═╝░░╚═╝░╚═════╝░╚═════╝░
+
+tags:
+  - name: Auth
+    description: Аутентификация, регистрация, востановление пароля
+  - name: User
+    description: Данные пользователя
+  - name: Handbooks
+    description: Справочники
+  - name: Courses
+    description: Курсы
+
+# ░█████╗░██████╗░██╗░░░░░░██╗░░░░░██╗░██████╗████████╗
+# ██╔══██╗██╔══██╗██║░░░░░░██║░░░░░██║██╔════╝╚══██╔══╝
+# ███████║██████╔╝██║█████╗██║░░░░░██║╚█████╗░░░░██║░░░
+# ██╔══██║██╔═══╝░██║╚════╝██║░░░░░██║░╚═══██╗░░░██║░░░
+# ██║░░██║██║░░░░░██║░░░░░░███████╗██║██████╔╝░░░██║░░░
+# ╚═╝░░╚═╝╚═╝░░░░░╚═╝░░░░░░╚══════╝╚═╝╚═════╝░░░░╚═╝░░░
+
+paths:
+  /users/login:
+    post:
+      tags:
+        - Auth
+      summary: Аутентификация
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              properties:
+                data:
+                  $ref: "#/components/schemas/LoginRequest"
+      responses:
+        "200":
+          description: ...
+          content:
+            application/vnd.api+json:
+              schema:
+                properties:
+                  data:
+                    $ref: "#/components/schemas/LoginResponse"
+                  links:
+                    $ref: "#/components/schemas/SelfLinks"
+        '400':
+          $ref: '#/components/responses/InvalidJSONError'
+        '404':
+          description: Не верные данные
+
+  /users/register:
+    post:
+      tags:
+        - Auth
+      summary:  Регистрация
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              properties:
+                data:
+                  $ref: "#/components/schemas/RegisterRequest"
+      responses:
+        "200":
+          description: ...
+          content:
+            application/vnd.api+json:
+              schema:
+                properties:
+                  data:
+                    $ref: "#/components/schemas/RegisterResponse"
+                  links:
+                    $ref: "#/components/schemas/SelfLinks"
+        '400':
+          $ref: '#/components/responses/InvalidJSONError'
+        '422':
+          description: Валидацию не прошел (например validation.unique - email уже существует)
+
+  /users/forgot:
+    post:
+      tags:
+        - Auth
+      summary:  Востановление пароля
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              properties:
+                data:
+                  $ref: "#/components/schemas/ForgotRequest"
+      responses:
+        "200":
+          description: После запроса, генерируется ссылка с токеном и отправляется на почту юзера
+          content:
+            application/vnd.api+json:
+              schema:
+                properties:
+                  data:
+                    $ref: "#/components/schemas/ForgotResponse"
+                  links:
+                    $ref: "#/components/schemas/SelfLinks"
+        '400':
+          $ref: '#/components/responses/InvalidJSONError'
+        '404':
+          description: Пользователь не найден
+
+  /users/profile/show:
+    get:
+      tags:
+        - User
+      summary:  Профайл
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: ...
+          content:
+            application/vnd.api+json:
+              schema:
+                properties:
+                  data:
+                    $ref: "#/components/schemas/ProfileShowResponse"
+                  links:
+                    $ref: "#/components/schemas/SelfLinks"
+        '400':
+          $ref: '#/components/responses/TokenExpiredError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /handbook-direction-types:
+    get:
+      tags:
+        - Handbooks
+      summary:  Типы направлений курса
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Для получения определенной записи /handbook-direction-types/{id}
+          content:
+            application/vnd.api+json:
+              schema:
+                properties:
+                  data:
+                    $ref: "#/components/schemas/HandbookDirectionTypesResponse"
+                  links:
+                    $ref: "#/components/schemas/SelfLinks"
+        '400':
+          $ref: '#/components/responses/TokenExpiredError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /location-cities:
+    get:
+      tags:
+        - Handbooks
+      summary: Города
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Для получения определенной записи /location-cities/{id}
+          content:
+            application/vnd.api+json:
+              schema:
+                properties:
+                  data:
+                    $ref: "#/components/schemas/LocationCitiesResponse"
+                  links:
+                    $ref: "#/components/schemas/SelfLinks"
+        '400':
+          $ref: '#/components/responses/TokenExpiredError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /location-coutries:
+    get:
+      tags:
+        - Handbooks
+      summary:  Страны
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Для получения определенной записи /location-countries/{id}
+          content:
+            application/vnd.api+json:
+              schema:
+                properties:
+                  data:
+                    $ref: "#/components/schemas/LocationCountriesResponse"
+                  links:
+                    $ref: "#/components/schemas/SelfLinks"
+        '400':
+          $ref: '#/components/responses/TokenExpiredError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /roles:
+    get:
+      tags:
+        - Handbooks
+      summary:  Роли
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: Для получения определенной записи /roles/{id}
+          content:
+            application/vnd.api+json:
+              schema:
+                properties:
+                  data:
+                    $ref: "#/components/schemas/RolesResponse"
+                  links:
+                    $ref: "#/components/schemas/SelfLinks"
+        '400':
+          $ref: '#/components/responses/TokenExpiredError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /constants:
+    get:
+      tags:
+        - Handbooks
+      summary:  Тип курса, тип обучения, Валюта
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: course_type, study_type, currency
+          content:
+            application/vnd.api+json:
+              schema:
+                properties:
+                  data:
+                    $ref: "#/components/schemas/ConstantsResponse"
+                  links:
+                    $ref: "#/components/schemas/SelfLinks"
+        '400':
+          $ref: '#/components/responses/TokenExpiredError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /courses:
+    get:
+      tags:
+        - Courses
+      summary: Все курсы
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: список course_type, study_type, currency можно получить по ендпоинту /constants
+          content:
+            application/vnd.api+json:
+              schema:
+                properties:
+                  data:
+                    $ref: "#/components/schemas/GetCoursesResponse"
+                  links:
+                    $ref: "#/components/schemas/SelfLinks"
+        '400':
+          $ref: '#/components/responses/TokenExpiredError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+    post:
+      tags:
+        - Courses
+      summary:  Создать курс
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              properties:
+                data:
+                  $ref: "#/components/schemas/CreateCourseRequest"
+      responses:
+        "201":
+          description: ...
+          content:
+            application/vnd.api+json:
+              schema:
+                properties:
+                  data:
+                    $ref: "#/components/schemas/CreateCourseResponse"
+                  links:
+                    $ref: "#/components/schemas/SelfLinks"
+        '400':
+          $ref: '#/components/responses/InvalidJSONError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /courses/{id}:
+    parameters:
+      - name: id
+        in: path
+        description: Course ID
+        required: true
+        schema:
+          type: integer
+
+    get:
+      tags:
+        - Courses
+      summary: Определенный курс с id = {id}
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: список course_type, study_type, currency можно получить по ендпоинту /constants
+          content:
+            application/vnd.api+json:
+              schema:
+                properties:
+                  data:
+                    $ref: "#/components/schemas/GetCoursesResponse"
+                  links:
+                    $ref: "#/components/schemas/SelfLinks"
+        '400':
+          $ref: '#/components/responses/TokenExpiredError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+    patch:
+      tags:
+        - Courses
+      summary:  Обновить курс
+      security:
+        - bearerAuth: []
+
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              properties:
+                data:
+                  $ref: "#/components/schemas/UpdateCourseRequest"
+      responses:
+        "200":
+          description: Не обязательно указывать все атрибуты. Если изменился name, то в атрибутах передать только name
+          content:
+            application/vnd.api+json:
+              schema:
+                properties:
+                  data:
+                    $ref: "#/components/schemas/UpdateCourseResponse"
+                  links:
+                    $ref: "#/components/schemas/SelfLinks"
+        '400':
+          $ref: '#/components/responses/InvalidJSONError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '422':
+          description: Валидацию не прошел
+    delete:
+      tags:
+        - Courses
+      summary: Удалить курс
+      security:
+        - bearerAuth: []
+      responses:
+        "204":
+          description: No content (запись успешно удалена)
+        '400':
+          $ref: '#/components/responses/TokenExpiredError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /course-programs:
+    get:
+      tags:
+        - Courses
+      summary: Все программы курсов
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: ...
+          content:
+            application/vnd.api+json:
+              schema:
+                properties:
+                  data:
+                    $ref: "#/components/schemas/GetCourseProgramsResponse"
+                  links:
+                    $ref: "#/components/schemas/SelfLinks"
+        '400':
+          $ref: '#/components/responses/TokenExpiredError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+    post:
+      tags:
+        - Courses
+      summary:  Создать программу курса
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              properties:
+                data:
+                  $ref: "#/components/schemas/CreateCourseProgramRequest"
+      responses:
+        "201":
+          description: ...
+          content:
+            application/vnd.api+json:
+              schema:
+                properties:
+                  data:
+                    $ref: "#/components/schemas/CreateCourseProgramResponse"
+                  links:
+                    $ref: "#/components/schemas/SelfLinks"
+        '400':
+          $ref: '#/components/responses/InvalidJSONError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+  /course-programs/{id}:
+    parameters:
+      - name: id
+        in: path
+        description: Course ID
+        required: true
+        schema:
+          type: integer
+
+    get:
+      tags:
+        - Courses
+      summary: Определенная программа курса с id = {id}
+      security:
+        - bearerAuth: []
+      responses:
+        "200":
+          description: ...
+          content:
+            application/vnd.api+json:
+              schema:
+                properties:
+                  data:
+                    $ref: "#/components/schemas/GetCourseProgramsResponse"
+                  links:
+                    $ref: "#/components/schemas/SelfLinks"
+        '400':
+          $ref: '#/components/responses/TokenExpiredError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+    patch:
+      tags:
+        - Courses
+      summary:  Обновить программу курса
+      security:
+        - bearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/vnd.api+json:
+            schema:
+              properties:
+                data:
+                  $ref: "#/components/schemas/UpdateCourseProgramRequest"
+      responses:
+        "200":
+          description: Не обязательно указывать все атрибуты. Если изменился name, то в атрибутах передать только name
+          content:
+            application/vnd.api+json:
+              schema:
+                properties:
+                  data:
+                    $ref: "#/components/schemas/UpdateCourseProgramResponse"
+                  links:
+                    $ref: "#/components/schemas/SelfLinks"
+        '400':
+          $ref: '#/components/responses/InvalidJSONError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+        '422':
+          description: Валидацию не прошел
+    delete:
+      tags:
+        - Courses
+      summary: Удалить программу курса
+      security:
+        - bearerAuth: []
+      responses:
+        "204":
+          description: No content (запись успешно удалена)
+        '400':
+          $ref: '#/components/responses/TokenExpiredError'
+        '401':
+          $ref: '#/components/responses/UnauthorizedError'
+
+
+# ░█████╗░██████╗░░░░░░██╗███████╗░█████╗░████████╗
+# ██╔══██╗██╔══██╗░░░░░██║██╔════╝██╔══██╗╚══██╔══╝
+# ██║░░██║██████╦╝░░░░░██║█████╗░░██║░░╚═╝░░░██║░░░
+# ██║░░██║██╔══██╗██╗░░██║██╔══╝░░██║░░██╗░░░██║░░░
+# ╚█████╔╝██████╦╝╚█████╔╝███████╗╚█████╔╝░░░██║░░░
+
+
+components:
+  responses:
+    UnauthorizedError:
+      description: Access token is missing or invalid
+    TokenExpiredError:
+      description: Token has expired. The token could not be parsed from the request
+    InvalidJSONError:
+      description: Invalid JSON
+
+  securitySchemes:
+    bearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    # Self links only
+    SelfLinks:
+      type: object
+      properties:
+        self:
+          type: string
+          format: link
+          example: http://bi-lms-backend.rocketfirm.net/api/v1/example/
+
+    # AUTH ----------
+
+    # Аутентификация REQUEST
+    LoginRequest:
+      type: object
+      properties:
+        type:
+          type: string
+          example: users
+        attributes:
+          properties:
+            email:
+              type: string
+              example: test@lms.test
+            password:
+              type: string
+              example: 123456Aa
+
+    # Аутентификация RESPONSE
+    LoginResponse:
+      type: object
+      properties:
+        type:
+          type: string
+          example: authenticates
+        attributes:
+          properties:
+            token:
+              type: string
+
+    # Регистрация REQUEST
+    RegisterRequest:
+      type: object
+      properties:
+        type:
+          type: string
+          example: users
+        attributes:
+          properties:
+            name:
+              type: string
+            email:
+              type: string
+              example: test@lms.test
+            password:
+              type: string
+              example: 123456Aa
+            password_confirmation:
+              type: string
+              example: 123456Aa
+
+    # Регистрация RESPONSE
+    RegisterResponse:
+      type: object
+      properties:
+        type:
+          type: string
+          example: authenticates
+        attributes:
+          properties:
+            token:
+              type: string
+
+    # Востановление пароля REQUEST
+    ForgotRequest:
+      type: object
+      properties:
+        type:
+          type: string
+          example: users
+        attributes:
+          properties:
+            email:
+              type: string
+              example: test@lms.test
+
+    # Востановление пароля RESPONSE
+    ForgotResponse:
+      type: object
+      properties:
+        type:
+          type: string
+          example: response-messages
+        attributes:
+          properties:
+            message:
+              type: string
+              example: Ссылка сброса пароля успешно отправлена на почту
+
+    # USER ----------
+
+    # Профайл (Личный кабинет) RESPONSE
+    ProfileShowResponse:
+      type: object
+      properties:
+        type:
+          type: string
+          example: users
+        id:
+          type: string
+          example: "1"
+        attributes:
+          properties:
+            name:
+              type: string
+              example: "test"
+            email:
+              type: string
+              example: "test@lms.test"
+            last_name:
+              type: string
+            middle_name:
+              type: string
+            phone:
+              type: string
+            occupation:
+              type: string
+            bith_date:
+              type: string
+            gender:
+              type: string
+            is_active_notification:
+              type: boolean
+            company_name:
+              type: string
+            languages:
+              type: string
+            iin:
+              type: string
+            id_card_file:
+              type: string
+            resume_file:
+              type: string
+            requisites_file:
+              type: string
+            agreement_files:
+              type: string
+            coach_type:
+              type: string
+            coach_status:
+              type: string
+            coach_fee:
+              type: string
+            scoring_file:
+              type: string
+            scoring:
+              type: integer
+            rups:
+              type: integer
+            created_at:
+              type: string
+              example: "2021-10-07T06:48:42.000000Z"
+            updated_at:
+              type: string
+              example: "2021-10-07T06:48:42.000000Z"
+
+    # HANDBOOKS ----------
+
+    # Типы направлений курса RESPONSE
+    HandbookDirectionTypesResponse:
+      type: object
+      properties:
+        type:
+          type: string
+          example: handbook-direction-types
+        id:
+          type: string
+          example: "1"
+        attributes:
+          properties:
+            name:
+              type: string
+
+    # Города RESPONSE
+    LocationCitiesResponse:
+      type: object
+      properties:
+        type:
+          type: string
+          example: location-cities
+        id:
+          type: string
+          example: "1"
+        attributes:
+          properties:
+            name:
+              type: string
+
+    # Страны RESPONSE
+    LocationCountriesResponse:
+      type: object
+      properties:
+        type:
+          type: string
+          example: location-countries
+        id:
+          type: string
+          example: "1"
+        attributes:
+          properties:
+            name:
+              type: string
+
+    # Роли RESPONSE
+    RolesResponse:
+      type: object
+      properties:
+        type:
+          type: string
+          example: roles
+        id:
+          type: string
+          example: "1"
+        attributes:
+          properties:
+            name:
+              type: string
+
+    # Тип курса, тип обучения, валюта RESPONSE
+    ConstantsResponse:
+      type: object
+      properties:
+        type:
+          type: string
+          example: constants
+        id:
+          type: string
+          example: ""
+        attributes:
+          properties:
+            study_types:
+              type: object
+              properties:
+                inner:
+                  type: string
+                  example: "Внутренний"
+                external:
+                  type: string
+                  example:  "Внешний"
+            course_types:
+              type: object
+              properties:
+                online:
+                  type: string
+                  example: "Онлайн"
+                offline:
+                  type: string
+                  example: "Оффлайн"
+                mixed:
+                  type: string
+                  example: "Смешанный"
+            currency:
+              type: object
+              properties:
+                kzt:
+                  type: string
+                  example: "тенге"
+                rub:
+                  type: string
+                  example: "рубль"
+                usd:
+                  type: string
+                  example: "доллар"
+                eur:
+                  type: string
+                  example: "евро"
+
+    # COURSES ----------
+
+    # Список всех курсов RESPONSE
+    GetCoursesResponse:
+      type: object
+      properties:
+        type:
+          type: string
+          example: courses
+        id:
+          type: string
+          example: "1"
+        attributes:
+          properties:
+            erp_id:
+              type: integer
+              example: 1
+            name:
+              type: string
+            description:
+              type: string
+              example: "long text"
+            price:
+              type: integer
+              example: 20000
+            date_from:
+              type: string
+              example: "2021-10-06 05:02:56"
+            date_to:
+              type: string
+              example: "2021-10-07 00:00:00"
+            duration:
+              type: string
+              example: "1 день"
+            image_url:
+              type: string
+              example: "http://bi-lms-backend.rocketfirm.net/courses/October2021/u5dgaXMcI.jpg"
+            course_type:
+              type: string
+              example: online
+            study_type:
+              type: string
+              example: inner
+            currecncy:
+              type: string
+              example: kzt
+            has_certificate:
+              type: boolean
+            homework_number:
+              type: integer
+            test_number:
+              type: integer
+            position:
+              type: integer
+            created_at:
+              type: string
+              example: "2021-10-07T06:48:42.000000Z"
+            updated_at:
+              type: string
+              example: "2021-10-07T06:48:42.000000Z"
+
+    # Создать курс REQUEST
+    CreateCourseRequest:
+      type: object
+      properties:
+        type:
+          type: string
+          example: courses
+        attributes:
+          properties:
+            erp_id:
+              type: integer
+              example: 1
+            name:
+              type: string
+            description:
+              type: string
+              example: "long text"
+            price:
+              type: integer
+              example: 20000
+            date_from:
+              type: string
+              example: "2021-10-06 05:02:56"
+            date_to:
+              type: string
+              example: "2021-10-07 00:00:00"
+            course_type:
+              type: string
+              example: online
+            study_type:
+              type: string
+              example: inner
+            currecncy:
+              type: string
+              example: kzt
+            has_certificate:
+              type: boolean
+            homework_number:
+              type: integer
+            test_number:
+              type: integer
+
+    # Создать курс RESPONSE
+    CreateCourseResponse:
+      type: object
+      properties:
+        type:
+          type: string
+          example: courses
+        id:
+          type: string
+          example: "1"
+        attributes:
+          properties:
+            erp_id:
+              type: integer
+              example: 1
+            name:
+              type: string
+            description:
+              type: string
+              example: "long text"
+            price:
+              type: integer
+              example: 20000
+            date_from:
+              type: string
+              example: "2021-10-06 05:02:56"
+            date_to:
+              type: string
+              example: "2021-10-07 00:00:00"
+            duration:
+              type: string
+              example: "1 день"
+            image_url:
+              type: string
+              example: ""
+            course_type:
+              type: string
+              example: online
+            study_type:
+              type: string
+              example: inner
+            currecncy:
+              type: string
+              example: kzt
+            has_certificate:
+              type: boolean
+            homework_number:
+              type: integer
+            test_number:
+              type: integer
+            position:
+              type: integer
+            created_at:
+              type: string
+              example: "2021-10-07T06:48:42.000000Z"
+            updated_at:
+              type: string
+              example: "2021-10-07T06:48:42.000000Z"
+
+    # Обновить курс REQUEST
+    UpdateCourseRequest:
+      type: object
+      properties:
+        type:
+          type: string
+          example: courses
+        id:
+          type: string
+          example: "1"
+        attributes:
+          properties:
+            erp_id:
+              type: integer
+              example: 1
+            name:
+              type: string
+            description:
+              type: string
+              example: "long text"
+            price:
+              type: integer
+              example: 20000
+            date_from:
+              type: string
+              example: "2021-10-06 05:02:56"
+            date_to:
+              type: string
+              example: "2021-10-07 00:00:00"
+            course_type:
+              type: string
+              example: online
+            study_type:
+              type: string
+              example: inner
+            currecncy:
+              type: string
+              example: kzt
+            has_certificate:
+              type: boolean
+            homework_number:
+              type: integer
+            test_number:
+              type: integer
+
+    # Обновить курс RESPONSE
+    UpdateCourseResponse:
+      type: object
+      properties:
+        type:
+          type: string
+          example: courses
+        id:
+          type: string
+          example: "1"
+        attributes:
+          properties:
+            erp_id:
+              type: integer
+              example: 1
+            name:
+              type: string
+            description:
+              type: string
+              example: "long text"
+            price:
+              type: integer
+              example: 20000
+            date_from:
+              type: string
+              example: "2021-10-06 05:02:56"
+            date_to:
+              type: string
+              example: "2021-10-07 00:00:00"
+            duration:
+              type: string
+              example: "1 день"
+            image_url:
+              type: string
+              example: ""
+            course_type:
+              type: string
+              example: online
+            study_type:
+              type: string
+              example: inner
+            currecncy:
+              type: string
+              example: kzt
+            has_certificate:
+              type: boolean
+            homework_number:
+              type: integer
+            test_number:
+              type: integer
+            position:
+              type: integer
+            created_at:
+              type: string
+              example: "2021-10-07T06:48:42.000000Z"
+            updated_at:
+              type: string
+              example: "2021-10-07T06:48:42.000000Z"
+
+              # COURSE Programs ----------
+
+    # Список всех программ курсов RESPONSE
+    GetCourseProgramsResponse:
+      type: object
+      properties:
+        type:
+          type: string
+          example: course-programs
+        id:
+          type: string
+          example: "1"
+        attributes:
+          properties:
+            name:
+              type: string
+            description:
+              type: string
+              example: "long text"
+            position:
+              type: integer
+            created_at:
+              type: string
+              example: "2021-10-07T06:48:42.000000Z"
+            updated_at:
+              type: string
+              example: "2021-10-07T06:48:42.000000Z"
+
+    # Создать программу курса REQUEST
+    CreateCourseProgramRequest:
+      type: object
+      properties:
+        type:
+          type: string
+          example: course-programs
+        attributes:
+          properties:
+            name:
+              type: string
+            description:
+              type: string
+              example: "long text"
+
+    # Создать программу курса RESPONSE
+    CreateCourseProgramResponse:
+      type: object
+      properties:
+        type:
+          type: string
+          example: course-programs
+        id:
+          type: string
+          example: "1"
+        attributes:
+          properties:
+            name:
+              type: string
+            description:
+              type: string
+              example: "long text"
+            position:
+              type: integer
+            created_at:
+              type: string
+              example: "2021-10-07T06:48:42.000000Z"
+            updated_at:
+              type: string
+              example: "2021-10-07T06:48:42.000000Z"
+
+    # Обновить программу курса REQUEST
+    UpdateCourseProgramRequest:
+      type: object
+      properties:
+        type:
+          type: string
+          example: course-programs
+        id:
+          type: string
+          example: "1"
+        attributes:
+          properties:
+            name:
+              type: string
+            description:
+              type: string
+              example: "long text"
+
+    # Обновить программу курса RESPONSE
+    UpdateCourseProgramResponse:
+      type: object
+      properties:
+        type:
+          type: string
+          example: course-programs
+        id:
+          type: string
+          example: "1"
+        attributes:
+          properties:
+            name:
+              type: string
+            description:
+              type: string
+              example: "long text"
+            position:
+              type: integer
+            created_at:
+              type: string
+              example: "2021-10-07T06:48:42.000000Z"
+            updated_at:
+              type: string
+              example: "2021-10-07T06:48:42.000000Z"
+
+
+

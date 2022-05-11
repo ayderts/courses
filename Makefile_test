@@ -1,0 +1,26 @@
+env = ./.env.example
+
+ifneq ("$(wildcard ./.env)","")
+    env = ./.env
+endif
+
+include ${env}
+export
+
+# Запустить установку проекта при подготовленном окружений
+.PHONY: install
+install:
+	echo ${env}
+	cp .env.example .env
+	/opt/plesk/php/7.4/bin/php /opt/psa/var/modules/composer/composer.phar install --verbose --prefer-dist --no-progress --no-interaction --no-dev --optimize-autoloader --no-suggest
+	/opt/plesk/php/7.4/bin/php artisan key:generate
+	/opt/plesk/php/7.4/bin/php artisan storage:link
+	/opt/plesk/php/7.4/bin/php artisan migrate:fresh --seed
+	/opt/plesk/php/7.4/bin/php artisan voyager:admin admin@rocketfirm.net --create
+
+# Обновление тестового  сервера
+.PHONY: update-code-dev
+update-code-dev:
+	/opt/plesk/php/7.4/bin/php /opt/psa/var/modules/composer/composer.phar install
+	/opt/plesk/php/7.4/bin/php artisan optimize:clear
+	/opt/plesk/php/7.4/bin/php artisan migrate --seed --force

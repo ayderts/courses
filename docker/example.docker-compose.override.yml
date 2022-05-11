@@ -1,0 +1,14 @@
+version: '3.7'
+
+services:
+  nginx:
+    ports:
+      - "80:80"
+      - "443:443"
+  adminer:
+    ports:
+      - "8080:8080"
+  postgres:
+    environment:
+      REPLICATION: 'true'
+      WAL_LEVEL: 'logical'
